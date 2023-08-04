@@ -1,5 +1,5 @@
+import Todo from "./todo/page";
+
 export default function Home() {
-  return (
-    <div>Hello World!</div>
-  )
+  return <Todo />;
 }
