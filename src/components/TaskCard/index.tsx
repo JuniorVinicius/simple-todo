@@ -8,18 +8,24 @@ import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
 
 type TaskCardProps = {
   hasChild?: boolean;
+  isChild?: boolean;
   collapse?: boolean;
   taskName?: string;
-  id?: string;
+  id: string | number;
   onCollapse?: () => void;
+  onDrag?: () => void;
+  onDrop?: () => void;
 };
 
 export default function TaskCard({
   collapse = false,
   hasChild = false,
+  isChild = false,
   taskName,
   id,
   onCollapse,
+  onDrag,
+  onDrop
 }: TaskCardProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [collapsed, setIsCollapsed] = useState(false);
@@ -29,19 +35,19 @@ export default function TaskCard({
   };
   return (
     <div
-      className={`w-full flex items-center p-2 hover:bg-hover-gray ${
-        collapsed ? "bg-hover-gray" : ""
-      }`}
+      className={`w-full flex items-center p-2 ${
+        !isChild ? "bg-slate-100" : ""
+      } hover:bg-hover-gray ${collapsed ? "bg-hover-gray" : ""}`}
     >
-      <CheckBox />
+      <CheckBox id={id?.toString()} />
       <div className="w-full m-0 ml-2 flex items-center justify-between">
         <div className="w-full">
           {!isEditing && (
             <p
-              className="w-fit text-main-dark"
+              className="w-fit text-main-dark z-50 relative"
               onClick={() => setIsEditing(true)}
             >
-              Buy Egg
+              {taskName}
             </p>
           )}
           {isEditing && (
@@ -49,7 +55,7 @@ export default function TaskCard({
               type="text"
               onBlur={() => setIsEditing(false)}
               className="w-full outline-0 bg-transparent"
-              defaultValue="Buy Egg"
+              defaultValue={taskName}
             />
           )}
         </div>
@@ -61,11 +67,13 @@ export default function TaskCard({
             </div>
           )}
           <BsTrash3 size={16} color="#FF8B8B" className="mx-2 cursor-pointer" />
+          <div onMouseEnter={onDrag} onMouseMove={onDrag} onMouseLeave={onDrop}>
           <MdDragHandle
             size={16}
             color="#ADADAD"
             className="mr-2 cursor-grab"
           />
+          </div>
           {collapse && !collapsed && (
             <IoIosArrowDown
               size={20}
