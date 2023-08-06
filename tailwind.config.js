@@ -9,11 +9,17 @@ module.exports = {
     "./src/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
-    minWidth: {
-      "80": "320px",
-    },
-    colors: {
-      "light-gray": "#D9D9D9",
+    extend: {
+      minWidth: {
+        80: "320px",
+      },
+      colors: {
+        "light": "#F9F8F8",
+        "light-gray": "#D9D9D9",
+        "hover-gray": "#EDEDED",
+        "dark-gray": "#ADADAD",
+        "main-dark": "#1E1E1E",
+      },
     },
   },
   plugins: [],
