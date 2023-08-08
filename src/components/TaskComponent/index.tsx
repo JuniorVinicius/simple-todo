@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import TaskCard from "../TaskCard";
 import ChildTask from "./ChildTask";
+import { DraggableLocation } from "react-beautiful-dnd";
 
 const DragDropContext = dynamic(
   () =>
@@ -30,34 +31,53 @@ type TaskComponentProps = {
   tasks: ListProps[];
 };
 
+type DragEndprops = {
+  type?: "inner" | "outer";
+  destination: DraggableLocation | null | undefined;
+  source: DraggableLocation;
+  parentIndex?: number;
+};
+
 export default function TaskComponent({ tasks }: TaskComponentProps) {
   const [isDraggingDisabled, setIsDragingDisabled] = useState(true);
   const [list, setList] = useState<ListProps[]>(tasks);
+  const [itemId, setItemId] = useState<string | number | null>(null);
 
-  const reorderOuter = (srcIndex: any, destIndex: any) => {
+  const reorderOuter = (srcIndex: number, destIndex: number) => {
     var updatedList = [...list];
     const [reorderedItem] = updatedList.splice(srcIndex, 1);
     updatedList.splice(destIndex, 0, reorderedItem);
     setList(updatedList);
   };
 
-  const reorderInner = (srcIndex: any, destIndex: any, parentIndex: any) => {
-    var updatedList = [...(list[parentIndex]?.subtask || [])];
-    const [reorderedItem] = updatedList.splice(srcIndex, 1);
-    updatedList.splice(destIndex, 0, reorderedItem);
-    var newList: ListProps[] = [];
+  const reorderInner = (
+    srcIndex: number,
+    destIndex: number,
+    parentIndex?: number
+  ) => {
+    if (parentIndex) {
+      var updatedList = [...(list[parentIndex]?.subtask || [])];
+      const [reorderedItem] = updatedList.splice(srcIndex, 1);
+      updatedList.splice(destIndex, 0, reorderedItem);
+      var newList: ListProps[] = [];
 
-    list.forEach((element, index) => {
-      if (index !== parentIndex) {
-        newList.push(element);
-      } else {
-        newList.push({ ...element, subtask: updatedList });
-      }
-    });
-    setList(newList);
+      list.forEach((element, index) => {
+        if (index !== parentIndex) {
+          newList.push(element);
+        } else {
+          newList.push({ ...element, subtask: updatedList });
+        }
+      });
+      setList(newList);
+    }
   };
 
-  const onDragEnd = ({ type, destination, source, parentIndex }: any) => {
+  const onDragEnd = ({
+    type,
+    destination,
+    source,
+    parentIndex,
+  }: DragEndprops) => {
     if (source && destination && type) {
       const srcIndex = source.index;
       const destIndex = destination.index;
@@ -70,11 +90,14 @@ export default function TaskComponent({ tasks }: TaskComponentProps) {
     }
   };
 
+
   return (
     <DragDropContext
       onDragEnd={(droppedItem) =>
         onDragEnd({
-          ...droppedItem,
+          source: droppedItem?.source,
+          destination: droppedItem?.destination,
+					type: "outer"
         })
       }
     >
@@ -103,17 +126,23 @@ export default function TaskComponent({ tasks }: TaskComponentProps) {
                     >
                       <TaskCard
                         id={item?.id}
-                        collapse
+                        collapsible={!!item?.subtask?.length}
+                        collapsed={itemId === item?.id}
+                        onCollapse={() =>
+                          setItemId((prev) => (prev === item?.id ? null : item?.id))
+                        }
                         onDrag={() => setIsDragingDisabled(false)}
                         onDrop={() => setIsDragingDisabled(true)}
                         hasChild={!!item?.subtask?.length}
                         taskName={item?.taskName}
                       />
-                      <ChildTask
-                        subtask={item?.subtask}
-                        parentIndex={index}
-                        onDragEnd={onDragEnd}
-                      />
+                      {itemId === item?.id && (
+                        <ChildTask
+                          subtask={item?.subtask}
+                          parentIndex={index}
+                          onDragEnd={onDragEnd}
+                        />
+                      )}
                     </div>
                   )}
                 </Draggable>

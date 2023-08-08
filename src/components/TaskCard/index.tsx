@@ -8,8 +8,8 @@ import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
 
 type TaskCardProps = {
   hasChild?: boolean;
-  isChild?: boolean;
-  collapse?: boolean;
+  collapsible?: boolean;
+  collapsed?: boolean;
   taskName?: string;
   id: string | number;
   onCollapse?: () => void;
@@ -18,26 +18,19 @@ type TaskCardProps = {
 };
 
 export default function TaskCard({
-  collapse = false,
+  collapsible = false,
   hasChild = false,
-  isChild = false,
   taskName,
+  collapsed,
   id,
   onCollapse,
   onDrag,
-  onDrop
+  onDrop,
 }: TaskCardProps) {
   const [isEditing, setIsEditing] = useState(false);
-  const [collapsed, setIsCollapsed] = useState(false);
-  const handleCollapse = () => {
-    setIsCollapsed((prev) => !prev);
-    onCollapse && onCollapse();
-  };
   return (
     <div
-      className={`w-full flex items-center p-2 ${
-        !isChild ? "bg-slate-100" : ""
-      } hover:bg-hover-gray ${collapsed ? "bg-hover-gray" : ""}`}
+      className={`w-full flex items-center p-2 hover:bg-hover-gray ${collapsed ? "bg-hover-gray" : ""}`}
     >
       <CheckBox id={id?.toString()} />
       <div className="w-full m-0 ml-2 flex items-center justify-between">
@@ -68,26 +61,26 @@ export default function TaskCard({
           )}
           <BsTrash3 size={16} color="#FF8B8B" className="mx-2 cursor-pointer" />
           <div onMouseEnter={onDrag} onMouseMove={onDrag} onMouseLeave={onDrop}>
-          <MdDragHandle
-            size={16}
-            color="#ADADAD"
-            className="mr-2 cursor-grab"
-          />
+            <MdDragHandle
+              size={16}
+              color="#ADADAD"
+              className="mr-2 cursor-grab"
+            />
           </div>
-          {collapse && !collapsed && (
+          {collapsible && !collapsed && (
             <IoIosArrowDown
               size={20}
               color="#ADADAD"
               className="cursor-pointer"
-              onClick={handleCollapse}
+              onClick={onCollapse}
             />
           )}
-          {collapse && collapsed && (
+          {collapsible && collapsed && (
             <IoIosArrowUp
               size={20}
               color="#ADADAD"
               className="cursor-pointer"
-              onClick={handleCollapse}
+              onClick={onCollapse}
             />
           )}
         </div>

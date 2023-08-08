@@ -72,7 +72,6 @@ export default function ChildTask({
                       {...DraggableChildProvided.draggableProps}
                     >
                       <TaskCard
-                        isChild
                         onDrag={() => setIsDragingChildDisabled(false)}
                         onDrop={() => setIsDragingChildDisabled(true)}
                         taskName={subItem?.taskName}
