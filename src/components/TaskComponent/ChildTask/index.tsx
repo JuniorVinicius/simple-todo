@@ -30,12 +30,14 @@ type ChildTaskProps = {
   subtask?: ListItem[];
   parentIndex: number;
   onDragEnd: ({ type, destination, source }: any) => void;
+  onCheckChange: ({ type, index, parentIndex }: CheckChangeProps) => void;
 };
 
 export default function ChildTask({
   subtask,
   parentIndex,
   onDragEnd,
+  onCheckChange,
 }: ChildTaskProps) {
   const [isDraggingChildDisabled, setIsDragingChildDisabled] = useState(true);
 
@@ -72,6 +74,15 @@ export default function ChildTask({
                       {...DraggableChildProvided.draggableProps}
                     >
                       <TaskCard
+                        isChild
+                        isChecked={subItem?.done}
+                        onCheckChange={() =>
+                          onCheckChange({
+                            type: "inner",
+                            index: subIndex,
+                            parentIndex,
+                          })
+                        }
                         onDrag={() => setIsDragingChildDisabled(false)}
                         onDrop={() => setIsDragingChildDisabled(true)}
                         taskName={subItem?.taskName}

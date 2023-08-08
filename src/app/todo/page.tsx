@@ -2,6 +2,7 @@
 import InputAdd from "@/components/Inputs/InputAdd";
 import SwitchPage from "@/components/SwitchPage";
 import TaskComponent from "@/components/TaskComponent";
+import { useEffect, useState } from "react";
 
 const MOCK = [
   {
@@ -26,26 +27,43 @@ const MOCK = [
       },
     ],
   },
-  {
-    id: 3,
-    taskName: "Buy egg",
-    done: false,
-    subtask: [
-      {
-        id: 3.1,
-        taskName: "Red",
-        done: false,
-      },
-      {
-        id: 3.2,
-        taskName: "white",
-        done: false,
-      },
-    ],
-  },
+  // {
+  //   id: 3,
+  //   taskName: "Buy egg",
+  //   done: false,
+  //   subtask: [
+  //     {
+  //       id: 3.1,
+  //       taskName: "Red",
+  //       done: false,
+  //     },
+  //     {
+  //       id: 3.2,
+  //       taskName: "white",
+  //       done: false,
+  //     },
+  //   ],
+  // },
 ];
 
 export default function Todo() {
+  const [taks, setTasks] = useState<ListProps[]>(MOCK);
+
+  console.log("🚀 ~ file: page.tsx:51 ~ taks:", taks);
+
+  const addNewTask = (value: string) => {
+    if (value?.length) {
+      setTasks((prev) => [
+        {
+          id: 30,
+          taskName: value,
+          done: false,
+        },
+        ...prev,
+      ]);
+    }
+  };
+
   return (
     <div className="w-screen min-h-screen bg-slate-100 pt-5 flex flex-col items-center">
       <h1 className="text-2xl text-center align-baseline">
@@ -56,8 +74,8 @@ export default function Todo() {
         <div className="w-full py-10">
           <SwitchPage />
         </div>
-        <InputAdd />
-        <TaskComponent tasks={MOCK}/>
+        <InputAdd onBlur={addNewTask} />
+        <TaskComponent tasks={taks} />
       </div>
     </div>
   );

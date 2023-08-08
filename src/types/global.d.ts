@@ -7,3 +7,9 @@ type ListItem = {
 interface ListProps extends ListItem {
   subtask?: ListItem[];
 }
+
+type CheckChangeProps = {
+  type?: "inner" | "outer";
+  parentIndex?: number;
+  index: number;
+};

@@ -39,12 +39,32 @@ type DragEndprops = {
 };
 
 export default function TaskComponent({ tasks }: TaskComponentProps) {
+  console.log("🚀 ~ file: index.tsx:42 ~ TaskComponent ~ tasks:", tasks);
   const [isDraggingDisabled, setIsDragingDisabled] = useState(true);
-  const [list, setList] = useState<ListProps[]>(tasks);
+  const [list, setList] = useState<ListProps[]>([]);
   const [itemId, setItemId] = useState<string | number | null>(null);
 
+  useEffect(() => {
+    setList(tasks);
+  }, [tasks]);
+
+  const updateList = (
+    list: ListProps[],
+    parentIndex: number,
+    newList: ListProps[],
+    updatedList?: ListItem[]
+  ) => {
+    list.forEach((element, index) => {
+      if (index !== parentIndex) {
+        newList.push(element);
+      } else {
+        newList.push({ ...element, subtask: updatedList });
+      }
+    });
+  };
+
   const reorderOuter = (srcIndex: number, destIndex: number) => {
-    var updatedList = [...list];
+    var updatedList = list;
     const [reorderedItem] = updatedList.splice(srcIndex, 1);
     updatedList.splice(destIndex, 0, reorderedItem);
     setList(updatedList);
@@ -56,18 +76,11 @@ export default function TaskComponent({ tasks }: TaskComponentProps) {
     parentIndex?: number
   ) => {
     if (parentIndex) {
-      var updatedList = [...(list[parentIndex]?.subtask || [])];
+      let updatedList = [...(list[parentIndex]?.subtask || [])];
       const [reorderedItem] = updatedList.splice(srcIndex, 1);
       updatedList.splice(destIndex, 0, reorderedItem);
-      var newList: ListProps[] = [];
-
-      list.forEach((element, index) => {
-        if (index !== parentIndex) {
-          newList.push(element);
-        } else {
-          newList.push({ ...element, subtask: updatedList });
-        }
-      });
+      let newList: ListProps[] = [];
+      updateList(list, parentIndex, newList, updatedList);
       setList(newList);
     }
   };
@@ -90,6 +103,26 @@ export default function TaskComponent({ tasks }: TaskComponentProps) {
     }
   };
 
+  const onCheckChange = ({ type, index, parentIndex }: CheckChangeProps) => {
+    if (type === "inner" && parentIndex) {
+      let updatedChildList = list[parentIndex]?.subtask || [];
+      updatedChildList[index].done = !updatedChildList[index].done;
+      let newList: ListProps[] = [];
+      updateList(list, parentIndex, newList, updatedChildList);
+      setList(newList);
+    } else if (type === "outer") {
+      let updatedList = list;
+      // if (updatedList[index]?.subtask?.length) {
+      //   let newSubtaskList: ListItem[] = [];
+      //   updatedList[index]?.subtask?.forEach((item) => {
+      //     newSubtaskList.push({ ...item, done: !item?.done });
+      //   });
+      //   updatedList[index].subtask = newSubtaskList;
+      // }
+      updatedList[index].done = !updatedList[index].done;
+      setList(updatedList);
+    }
+  };
 
   return (
     <DragDropContext
@@ -97,7 +130,7 @@ export default function TaskComponent({ tasks }: TaskComponentProps) {
         onDragEnd({
           source: droppedItem?.source,
           destination: droppedItem?.destination,
-					type: "outer"
+          type: "outer",
         })
       }
     >
@@ -129,7 +162,14 @@ export default function TaskComponent({ tasks }: TaskComponentProps) {
                         collapsible={!!item?.subtask?.length}
                         collapsed={itemId === item?.id}
                         onCollapse={() =>
-                          setItemId((prev) => (prev === item?.id ? null : item?.id))
+                          setItemId((prev) =>
+                            prev === item?.id ? null : item?.id
+                          )
+                        }
+                        childs={item?.subtask}
+                        isChecked={item?.done}
+                        onCheckChange={() =>
+                          onCheckChange({ type: "outer", index: index })
                         }
                         onDrag={() => setIsDragingDisabled(false)}
                         onDrop={() => setIsDragingDisabled(true)}
@@ -138,6 +178,7 @@ export default function TaskComponent({ tasks }: TaskComponentProps) {
                       />
                       {itemId === item?.id && (
                         <ChildTask
+                          onCheckChange={onCheckChange}
                           subtask={item?.subtask}
                           parentIndex={index}
                           onDragEnd={onDragEnd}
